@@ -39,7 +39,7 @@ jobs:
         cmake --install build --prefix C:\qbt
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: qbt
         path: C:\qbt
