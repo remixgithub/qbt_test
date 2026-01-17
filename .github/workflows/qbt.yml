@@ -1,82 +1,45 @@
-name: Build Static qBittorrent Windows
+name: Build qBittorrent Windows Static
 
 on:
   workflow_dispatch:
-    inputs:
-      qbittorrent_version:
-        description: 'qBittorrent Git Ref (branch, tag, or SHA)'
-        required: true
-        default: 'release-4.6.3'
-      libtorrent_version:
-        description: 'Libtorrent Git Ref (branch, tag, or SHA)'
-        required: true
-        default: 'v2.0.9'
 
 jobs:
   build:
-    runs-on: windows-latest
-    
+    runs-on: windows-2022
+
     steps:
-      - name: Checkout qBittorrent
-        uses: actions/checkout@v4
-        with:
-          repository: qbittorrent/qBittorrent
-          ref: ${{ github.event.inputs.qbittorrent_version }}
-          path: qbittorrent
-          submodules: recursive
+    - name: Setup MSVC environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-      - name: Checkout libtorrent
-        uses: actions/checkout@v4
-        with:
-          repository: arvidn/libtorrent
-          ref: ${{ github.event.inputs.libtorrent_version }}
-          path: libtorrent
-          submodules: recursive
+    - name: Install dependencies
+      run: |
+        Invoke-WebRequest -Uri "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.zip" -OutFile "boost_1_86_0.zip"
+        Expand-Archive -Path "boost_1_86_0.zip" -DestinationPath C:\ -Force
+        cd C:\vcpkg
+        git pull
+        bootstrap-vcpkg.bat
+        vcpkg install libiconv:x64-windows-static zlib:x64-windows-static openssl:x64-windows-static qt5-base:x64-windows-static qt5-svg:x64-windows-static qt5-tools:x64-windows-static qt5-winextras:x64-windows-static --clean-after-build
 
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
+    - name: Build libtorrent
+      run: |
+        git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
+        cd libtorrent
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -Dstatic_runtime=ON -Ddeprecated-functions=OFF -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake --build build
+        cmake --install build --prefix C:\libtorrent-install
 
-      - name: Install Dependencies (vcpkg)
-        run: |
-          # Install core dependencies via vcpkg
-          # We force static triplets for Windows
-          vcpkg install boost-system:x64-windows-static
-          vcpkg install boost-asio:x64-windows-static
-          vcpkg install openssl:x64-windows-static
-          vcpkg install qtbase:x64-windows-static
-          vcpkg install qtsvg:x64-windows-static
-          vcpkg install qttools:x64-windows-static
-          vcpkg install zlib:x64-windows-static
+    - name: Build qBittorrent
+      run: |
+        git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
+        cd qBittorrent
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake --build build
+        cmake --install build --prefix C:\qbt
 
-      - name: Build libtorrent (Static)
-        run: |
-          cd libtorrent
-          cmake -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -Dsingle_conf=ON `
-            -Dstatic_runtime=ON `
-            -Dshared_lib=OFF `
-            -DCMAKE_TOOLCHAIN_FILE=C:/thirdparty/vcpkg/scripts/buildsystems/vcpkg.cmake `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static
-          cmake --build build --config Release --parallel $env:NUMBER_OF_PROCESSORS
-          cmake --install build --prefix ../dist
-
-      - name: Build qBittorrent (Static)
-        run: |
-          cd qbittorrent
-          cmake -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DMSVC_RUNTIME_DYNAMIC=OFF `
-            -DGUI=ON `
-            -DWEBUI=ON `
-            -DSTACKTRACE=OFF `
-            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/dist" `
-            -DCMAKE_TOOLCHAIN_FILE=C:/thirdparty/vcpkg/scripts/buildsystems/vcpkg.cmake `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static
-          cmake --build build --config Release --parallel $env:NUMBER_OF_PROCESSORS
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: qBittorrent-Static-${{ github.event.inputs.qbittorrent_version }}
-          path: qbittorrent/build/release/qbittorrent.exe
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: qbt
+        path: C:\qbt
