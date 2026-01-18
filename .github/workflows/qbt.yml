@@ -16,11 +16,12 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '5.15.18'
+        version: '6.8.3'
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2022_64'
-        modules: 'qttools qtsvg qtwinextras'
+        archives: qtbase qtsvg qttools
+        modules: qtimageformats
 
     - name: Install dependencies
       run: |
@@ -43,7 +44,7 @@ jobs:
       run: |
         git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
         cd qBittorrent
-        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$env:Qt5_Dir -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DQT6=ON -DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
         cmake --build build
         cmake --install build --prefix C:\qbt
 
