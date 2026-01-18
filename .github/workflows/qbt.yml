@@ -13,6 +13,15 @@ jobs:
       with:
         arch: x64
 
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.18'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2022_64'
+        modules: 'qttools qtsvg qtwinextras'
+
     - name: Install dependencies
       run: |
         Invoke-WebRequest -Uri "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.zip" -OutFile "boost_1_86_0.zip"
@@ -20,7 +29,7 @@ jobs:
         cd C:\vcpkg
         git pull
         bootstrap-vcpkg.bat
-        vcpkg install libiconv:x64-windows-static zlib:x64-windows-static openssl:x64-windows-static qt5-base:x64-windows-static qt5-svg:x64-windows-static qt5-tools:x64-windows-static qt5-winextras:x64-windows-static --clean-after-build
+        vcpkg install libiconv:x64-windows-static zlib:x64-windows-static openssl:x64-windows-static --clean-after-build
 
     - name: Build libtorrent
       run: |
@@ -34,7 +43,7 @@ jobs:
       run: |
         git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
         cd qBittorrent
-        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$env:Qt5_Dir -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
         cmake --build build
         cmake --install build --prefix C:\qbt
 
