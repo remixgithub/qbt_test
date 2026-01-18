@@ -26,7 +26,7 @@ jobs:
       run: |
         git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
         cd libtorrent
-        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -Dstatic_runtime=ON -Ddeprecated-functions=OFF -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -Dstatic_runtime=ON -Ddeprecated-functions=OFF -DBoost_INCLUDE_DIR=C:\boost_1_86_0 -Wno-dev
         cmake --build build
         cmake --install build --prefix C:\libtorrent-install
 
@@ -34,7 +34,7 @@ jobs:
       run: |
         git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
         cd qBittorrent
-        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0 -Wno-dev
         cmake --build build
         cmake --install build --prefix C:\qbt --strip
 
