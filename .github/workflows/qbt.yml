@@ -20,7 +20,7 @@ jobs:
         cd C:\vcpkg
         git pull
         bootstrap-vcpkg.bat
-        vcpkg install zlib:x64-windows-static openssl:x64-windows-static qtbase:x64-windows-static qtsvg:x64-windows-static qttools:x64-windows-static --clean-after-build
+        vcpkg install --vcpkg-root=C:\vcpkg zlib:x64-windows-static openssl:x64-windows-static qtbase:x64-windows-static qtsvg:x64-windows-static qttools:x64-windows-static --clean-after-build
 
     - name: Build libtorrent
       run: |
