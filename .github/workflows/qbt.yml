@@ -20,7 +20,7 @@ jobs:
         cd C:\vcpkg
         git pull
         bootstrap-vcpkg.bat
-        vcpkg install --vcpkg-root=C:\vcpkg zlib:x64-windows-static openssl:x64-windows-static qt5-base:x64-windows-static qt5-svg:x64-windows-static qt5-tools:x64-windows-static qt5-winextras:x64-windows-static --clean-after-build
+        vcpkg install --vcpkg-root=C:\vcpkg zlib:x64-windows-static openssl:x64-windows-static qtbase:x64-windows-static qtsvg:x64-windows-static qttools:x64-windows-static --clean-after-build
     - name: Build libtorrent
       run: |
         git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
@@ -31,7 +31,7 @@ jobs:
 
     - name: Build qBittorrent
       run: |
-        git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
+        git clone --branch v5_0_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
         cd qBittorrent
         cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0 -Wno-dev
         cmake --build build
