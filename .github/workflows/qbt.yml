@@ -1,4 +1,4 @@
-name: Build qBittorrent Windows Static
+name: Build qBittorrent v5_0_x Windows Static
 
 on:
   workflow_dispatch:
