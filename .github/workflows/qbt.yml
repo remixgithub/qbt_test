@@ -15,8 +15,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        curl -L "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.zip" -o "boost_1_86_0.zip"
-        7z x "boost_1_86_0.zip" -oC:\
+        curl -s "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz" -o "boost_1_86_0.tar.gz"
+        tar -xzf boost_1_86_0.tar.gz -C C:\
         cd C:\vcpkg
         git pull
         bootstrap-vcpkg.bat
