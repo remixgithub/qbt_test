@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Setup MSVC environment
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
         arch: x64
 
@@ -38,7 +38,7 @@ jobs:
         cmake --install build --prefix C:\qbt --strip
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: qbt
         path: C:\qbt
