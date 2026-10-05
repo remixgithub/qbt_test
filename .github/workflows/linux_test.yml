@@ -22,17 +22,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Execute qbittorrent-nox-static build script
+        env:
+          bs_libtorrent_tag: ${{ inputs.libtorrent_tag }}
+          bs_qbittorrent_tag: ${{ inputs.qbittorrent_tag }}
         run: |
           ICU_ARG=""
           if [ "${{ inputs.icu }}" = "true" ]; then
             ICU_ARG="-icu"
           fi
-
-          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/refs/heads/master/qbittorrent-nox-static.sh) \
-            all \
-            -lt "${{ inputs.libtorrent_tag }}" \
-            -qb "${{ inputs.qbittorrent_tag }}" \
-            $ICU_ARG
+  
+          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/main/qbittorrent-nox-static) all $ICU_ARG
 
       - name: Locate compiled binary
         id: binary
@@ -42,7 +41,7 @@ jobs:
             TARGET_FILE=$(find "." -type f -name "qbittorrent-nox" | head -n 1)
           fi
           echo "path=$TARGET_FILE" >> $GITHUB_OUTPUT
-          echo "file: $TARGET_FILE"
+          echo "Скомпилированный файл: $TARGET_FILE"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
