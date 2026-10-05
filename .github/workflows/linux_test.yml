@@ -9,6 +9,7 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        sudo apt install autoconf autoconf-archive automake libtool -y
         cd ~
         curl -s "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz" -o "boost_1_86_0.tar.gz"
         tar -xzf boost_1_86_0.tar.gz
