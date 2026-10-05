@@ -31,7 +31,7 @@ jobs:
             ICU_ARG="-icu"
           fi
   
-          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/main/qbittorrent-nox-static) all $ICU_ARG
+          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/refs/heads/master/qbittorrent-nox-static.sh) all $ICU_ARG
 
       - name: Locate compiled binary
         id: binary
