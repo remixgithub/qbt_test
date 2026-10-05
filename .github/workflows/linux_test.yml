@@ -1,0 +1,52 @@
+name: Build qBittorrent Static
+
+on:
+  workflow_dispatch:
+    inputs:
+      qbittorrent_tag:
+        required: true
+        default: 'release-4.6.7'
+      libtorrent_tag:
+        required: true
+        default: 'RC_1_2'
+      icu:
+        type: boolean
+        default: false
+
+jobs:
+  build-static:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute qbittorrent-nox-static build script
+        run: |
+          ICU_ARG=""
+          if [ "${{ inputs.icu }}" = "true" ]; then
+            ICU_ARG="-icu"
+          fi
+
+          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/refs/heads/master/qbittorrent-nox-static.sh) \
+            all \
+            -lt "${{ inputs.libtorrent_tag }}" \
+            -qb "${{ inputs.qbittorrent_tag }}" \
+            $ICU_ARG
+
+      - name: Locate compiled binary
+        id: binary
+        run: |
+          TARGET_FILE=$(find "$HOME" -type f -name "qbittorrent-nox" | head -n 1)
+          if [ -z "$TARGET_FILE" ]; then
+            TARGET_FILE=$(find "." -type f -name "qbittorrent-nox" | head -n 1)
+          fi
+          echo "path=$TARGET_FILE" >> $GITHUB_OUTPUT
+          echo "file: $TARGET_FILE"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qbittorrent-nox-${{ inputs.qbittorrent_tag }}_lt-${{ inputs.libtorrent_tag }}
+          path: ${{ steps.binary.outputs.path }}
+          if-no-files-found: error
