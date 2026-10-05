@@ -1,51 +1,39 @@
-name: Build qBittorrent Static
+name: Build qBittorrent v4_6_x Linux
 
 on:
   workflow_dispatch:
-    inputs:
-      qbittorrent_tag:
-        required: true
-        default: 'release-4.6.7'
-      libtorrent_tag:
-        required: true
-        default: 'RC_1_2'
-      icu:
-        type: boolean
-        default: false
 
 jobs:
-  build-static:
-    runs-on: ubuntu-26.04
-
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        curl -s "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz" -o "boost_1_86_0.tar.gz"
+        tar -xzf boost_1_86_0.tar.gz
+        git clone --depth 1 https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        bootstrap-vcpkg.sh
+        vcpkg --vcpkg4-windows-linux openssl:x64-linux qt5-base:x64-linux qt5-svg:x64-linux qt5-tools:x64-linux --clean-after-build
+    - name: Build libtorrent
+      run: |
+        git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
+        cd libtorrent
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DBUILD_SHARED_LIBS=OFF -Dstatic_runtime=ON -Ddeprecated-functions=OFF -DBoost_INCLUDE_DIR=\boost_1_86_0 -Wno-dev
+        cmake --build build
+        cmake --install build --prefix libtorrent-install
 
-      - name: Execute qbittorrent-nox-static build script
-        env:
-          bs_libtorrent_tag: ${{ inputs.libtorrent_tag }}
-          bs_qbittorrent_tag: ${{ inputs.qbittorrent_tag }}
-        run: |
-          ICU_ARG=""
-          if [ "${{ inputs.icu }}" = "true" ]; then
-            ICU_ARG="-icu"
-          fi
-  
-          bash <(curl -sBSL https://raw.githubusercontent.com/userdocs/qbittorrent-nox-static/refs/heads/master/qbittorrent-nox-static.sh) all $ICU_ARG
+    - name: Build qBittorrent
+      run: |
+        git clone --branch v4_6_x --depth 1 https://github.com/qbittorrent/qBittorrent.git
+        cd qBittorrent
+        (Get-Content "src/base/CMakeLists.txt") -replace 'ZLIB::ZLIB', 'ZLIB::ZLIBSTATIC' | Set-Content "src/base/CMakeLists.txt"
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DMSVC_RUNTIME_DYNAMIC=OFF -DLibtorrentRasterbar_DIR=C:\libtorrent-install\lib\cmake\LibtorrentRasterbar\ -DBoost_INCLUDE_DIR=C:\boost_1_86_0 -Wno-dev
+        cmake --build build
+        cmake --install build --prefix C:\qbt --strip
 
-      - name: Locate compiled binary
-        id: binary
-        run: |
-          TARGET_FILE=$(find "$HOME" -type f -name "qbittorrent-nox" | head -n 1)
-          if [ -z "$TARGET_FILE" ]; then
-            TARGET_FILE=$(find "." -type f -name "qbittorrent-nox" | head -n 1)
-          fi
-          echo "path=$TARGET_FILE" >> $GITHUB_OUTPUT
-          echo "Скомпилированный файл: $TARGET_FILE"
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: qbittorrent-nox-${{ inputs.qbittorrent_tag }}_lt-${{ inputs.libtorrent_tag }}
-          path: ${{ steps.binary.outputs.path }}
-          if-no-files-found: error
+    - name: Upload artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: qbt
+        path: C:\qbt
