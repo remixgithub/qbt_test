@@ -9,12 +9,13 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        cd ~
         curl -s "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz" -o "boost_1_86_0.tar.gz"
         tar -xzf boost_1_86_0.tar.gz
         git clone --depth 1 https://github.com/microsoft/vcpkg.git
         cd vcpkg
         bootstrap-vcpkg.sh
-        vcpkg --vcpkg4-windows-linux openssl:x64-linux qt5-base:x64-linux qt5-svg:x64-linux qt5-tools:x64-linux --clean-after-build
+        vcpkg install zlib:x64-linux openssl:x64-linux qt5-base:x64-linux qt5-svg:x64-linux qt5-tools:x64-linux --clean-after-build
     - name: Build libtorrent
       run: |
         git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
