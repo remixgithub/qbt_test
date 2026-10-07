@@ -5,20 +5,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
+
     - name: Install dependencies
       run: |
         sudo apt update
         sudo apt upgrade -y
         sudo apt install autoconf autoconf-archive automake libtool libltdl-dev '^libxcb.*-dev' libx11-xcb-dev libgl1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxtst-dev -y
         cd ~
-        wget "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz"
-        gunzip boost_1_86_0.tar.gz
+        wget https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz
+        tar -xvf boost_1_86_0.tar.gz
         git clone --depth 1 https://github.com/microsoft/vcpkg.git
         cd vcpkg
         ./bootstrap-vcpkg.sh
         ./vcpkg install zlib:x64-linux openssl:x64-linux qt5-base:x64-linux qt5-svg:x64-linux qt5-tools:x64-linux --clean-after-build
+
     - name: Build libtorrent
       run: |
         git clone --recurse-submodules --branch RC_1_2 --depth 1 https://github.com/arvidn/libtorrent.git
