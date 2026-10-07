@@ -9,10 +9,12 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        sudo apt update
+        sudo apt upgrade -y
         sudo apt install autoconf autoconf-archive automake libtool libltdl-dev '^libxcb.*-dev' libx11-xcb-dev libgl1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libxtst-dev -y
         cd ~
-        curl -s "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz" -o "boost_1_86_0.tar.gz"
-        tar -xzf boost_1_86_0.tar.gz
+        wget "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz"
+        gunzip boost_1_86_0.tar.gz
         git clone --depth 1 https://github.com/microsoft/vcpkg.git
         cd vcpkg
         ./bootstrap-vcpkg.sh
